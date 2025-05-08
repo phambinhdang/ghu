@@ -1,0 +1,39 @@
+// Click trên bản đồ
+    map.on('click', function(e) {
+      currentLatLng = e.latlng;
+
+      if (currentMarker) {
+        currentMarker.setLatLng(e.latlng);
+      } else {
+        currentMarker = L.marker(e.latlng).addTo(map);
+      }
+
+      document.getElementById('coords').textContent =
+        `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+    });
+
+    // Hàm lưu vị trí
+    function saveLocation() {
+      if (!currentLatLng) {
+        alert("Bạn chưa chọn vị trí!");
+        return;
+      }
+
+      // Lưu vào mảng
+      savedLocations.push(currentLatLng);
+
+      // Tạo marker mới (cố định)
+      var marker = L.marker(currentLatLng).addTo(map);
+      var info = `Vị trí ${savedLocations.length}: ${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`;
+      marker.bindPopup(info).openPopup();
+
+      // Hiển thị danh sách
+      var li = document.createElement("li");
+      li.textContent = info;
+      document.getElementById("saved-list").appendChild(li);
+
+      // Reset marker hiện tại
+      currentMarker.remove();
+      currentMarker = null;
+      currentLatLng = null;
+      document.getElementById('coords').textContent = "Chưa chọn";
