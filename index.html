@@ -16,6 +16,14 @@
     #coords {
       font-weight: bold;
     }
+    li {
+      margin-bottom: 5px;
+    }
+    .delete-btn {
+      margin-left: 10px;
+      color: red;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -30,21 +38,17 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Khởi tạo bản đồ
-    var map = L.map('map').setView([10.762622, 106.660172], 13); // Tọa độ trung tâm là TP.HCM
+    var map = L.map('map').setView([10.762622, 106.660172], 13);
 
-    // Thêm tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Biến toàn cục
     var currentLatLng = null;
     var currentMarker = null;
     var savedLocations = [];
     var savedMarkers = [];
 
-    // Sự kiện click trên bản đồ
     map.on('click', function(e) {
       currentLatLng = e.latlng;
 
@@ -58,27 +62,48 @@
         `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
     });
 
-    // Hàm lưu vị trí
     function saveLocation() {
       if (!currentLatLng) {
         alert("Bạn chưa chọn vị trí!");
         return;
       }
 
-      savedLocations.push(currentLatLng);
+      let latlng = currentLatLng;
+      savedLocations.push(latlng);
 
-      var marker = L.marker(currentLatLng).addTo(map);
-      var info = `Vị trí ${savedLocations.length}: ${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`;
+      let marker = L.marker(latlng).addTo(map);
+      let info = `Vị trí ${savedLocations.length}: ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
       marker.bindPopup(info).openPopup();
       savedMarkers.push(marker);
 
-      var li = document.createElement("li");
+      // Tạo phần tử danh sách
+      let li = document.createElement("li");
       li.textContent = info;
       li.style.cursor = "pointer";
+
+      // Thêm chức năng chuyển đến vị trí khi click
       li.onclick = function () {
         map.setView(marker.getLatLng(), 15);
         marker.openPopup();
       };
+
+      // Tạo nút xóa
+      let deleteBtn = document.createElement("span");
+      deleteBtn.textContent = "❌";
+      deleteBtn.className = "delete-btn";
+
+      deleteBtn.onclick = function (e) {
+        e.stopPropagation(); // Ngăn sự kiện click trên li
+        let index = savedMarkers.indexOf(marker);
+        if (index !== -1) {
+          map.removeLayer(marker);
+          savedMarkers.splice(index, 1);
+          savedLocations.splice(index, 1);
+        }
+        li.remove();
+      };
+
+      li.appendChild(deleteBtn);
       document.getElementById("saved-list").appendChild(li);
 
       if (currentMarker) {
@@ -90,12 +115,10 @@
       document.getElementById('coords').textContent = "Chưa chọn";
     }
 
-    // Hàm xóa tất cả vị trí đã lưu
     function clearLocations() {
       savedLocations = [];
       savedMarkers.forEach(m => map.removeLayer(m));
       savedMarkers = [];
-
       document.getElementById("saved-list").innerHTML = "";
     }
   </script>
