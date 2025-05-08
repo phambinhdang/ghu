@@ -49,6 +49,7 @@
     var savedLocations = [];
     var savedMarkers = [];
 
+    // Sự kiện click 1 lần: chỉ chọn vị trí, hiện marker tạm
     map.on('click', function(e) {
       currentLatLng = e.latlng;
 
@@ -60,6 +61,22 @@
 
       document.getElementById('coords').textContent =
         `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+    });
+
+    // Sự kiện double-click: chọn + lưu luôn vị trí
+    map.on('dblclick', function(e) {
+      currentLatLng = e.latlng;
+
+      if (currentMarker) {
+        currentMarker.setLatLng(e.latlng);
+      } else {
+        currentMarker = L.marker(e.latlng, { draggable: false }).addTo(map);
+      }
+
+      document.getElementById('coords').textContent =
+        `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+
+      saveLocation();
     });
 
     function saveLocation() {
@@ -76,24 +93,21 @@
       marker.bindPopup(info).openPopup();
       savedMarkers.push(marker);
 
-      // Tạo phần tử danh sách
       let li = document.createElement("li");
       li.textContent = info;
       li.style.cursor = "pointer";
 
-      // Thêm chức năng chuyển đến vị trí khi click
       li.onclick = function () {
         map.setView(marker.getLatLng(), 15);
         marker.openPopup();
       };
 
-      // Tạo nút xóa
       let deleteBtn = document.createElement("span");
       deleteBtn.textContent = "❌";
       deleteBtn.className = "delete-btn";
 
       deleteBtn.onclick = function (e) {
-        e.stopPropagation(); // Ngăn sự kiện click trên li
+        e.stopPropagation();
         let index = savedMarkers.indexOf(marker);
         if (index !== -1) {
           map.removeLayer(marker);
